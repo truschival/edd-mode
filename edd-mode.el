@@ -37,8 +37,8 @@
 (c-lang-defconst c-primitive-type-kwds
   edd (append '("FLOAT" 	"BOOL"
 				"INDEX"		"ARRAY_INDEX"
-				"ASCII" "BIT_ENUMERATED" "DATE"
-				"UNSIGNED_INTEGER")
+				"ASCII" "BIT_ENUMERATED" "DATE" "INTEGER" "ENUMERATED" 
+ 				"UNSIGNED_INTEGER")
 			  (c-lang-const c-primitive-type-kwds)))
 
 
@@ -47,7 +47,7 @@
            '("READ" "WRITE" "TRUE" "FALSE"
 			 "DEVICE" "OFFLINE" "DYNAMIC" "LOCAL" "TABLE"
 			 "SCOPE" "LARGE" "ONLINE" "DIALOG" "PAGE"
-			  "VERTICAL" "XX_LARGE" "INPUT"
+			  "VERTICAL" "USER_INTERFACE" "INPUT" "LOCK_UNLOCK"
 			 )
            (c-lang-const c-constant-kwds)))
 
@@ -62,30 +62,45 @@
 (c-lang-defconst c-block-stmt-1-kwds
   edd (append
 	   '("ITEMS" "TYPE" "DEFINITION"
-		 "REQUEST" "REPLY" "TRANSACTION"
-         "OPERATION" "RESPONSE_CODES" "VECTORS")
+		 "REQUEST"  "TRANSACTION" "REPLY"
+         "OPERATION" "RESPONSE_CODES" "VECTORS" "POST_EDIT_ACTIONS"
+		 "ELSE" )
 	(c-lang-const c-block-stmt-1-kwds)))
+
+;; Attributes with braces to open substatement blocks
+;; (c-lang-defconst c-other-block-decl-kwds
+;;   edd 
+;; 	   '("REPLY"
+;; 		 )
+;;   )
+
 
 ;; Statements followed directly by a Parentesis and block of code
 (c-lang-defconst c-block-stmt-2-kwds
   edd (append
-	'("VALIDITY" "VISIBILITY" "IF" "ELSE" )
-	(c-lang-const c-block-stmt-2-kwds)))
+	   '("VALIDITY" "VISIBILITY" "IF" "SELECT")
+	   (c-lang-const c-block-stmt-2-kwds)))
 
-;; Declaration of types
-(c-lang-defconst c-type-list-kwds
+;; Keywords introducing colon terminated labels in blocks.
+(c-lang-defconst c-label-kwds
+  edd (append
+	   '("case" "CASE")
+	   (c-lang-const c-label-kwds)))
+
+;; Declaration of types c-class-decl-kwds or c-type-list-kwds
+(c-lang-defconst c-class-decl-kwds
   edd (append
 	   '("ARRAY" "INTERFACE" "COMMAND" "MENU" "METHOD"
 		 "GRID" "IMAGE" "TEMPLATE" "VARIABLE"
 		 "SOURCE" "AXIS" "WAVEFORM" "COLLECTION")
-	   (c-lang-const c-type-list-kwds)))
+	   (c-lang-const  c-class-decl-kwds)))
 
 ;; Free standing statements (break, continue...)
 (c-lang-defconst c-simple-stmt-kwds
   edd (append
-           '("random"
-             )
-           (c-lang-const c-simple-stmt-kwds)))
+	   '("random"
+		 )
+	   (c-lang-const c-simple-stmt-kwds)))
 
 ;; This allows the classes after the "LIKE" in the class declartion to be
 ;; fontified.
@@ -95,11 +110,23 @@
 ;; We map all attribute keywords of EDDL to other-keywords
 (c-lang-defconst c-other-kwds
   edd (append
-	   '(
+	   '("FOO")
+	   (c-lang-const c-other-kwds)))
+
+;;------------------------------------------------------------------------------
+;; Field bus specifc keywords
+;;------------------------------------------------------------------------------
+
+(setq edd-HART-kwds '("XMTR_IGNORE_ALL_DEVICE_STATUS"))
+
+(setq edd-property-kwds '("X_LARGE" "XX_LARGE"))
+
+;; Attributes in Blocks (VARIABLE, Axis...)
+(setq edd-attribute-kwds
+	  '(
 		 "ACCESS"
 		 "CLASS"
 		 "HANDLING"
-		 "TYPE"
 		 "PATH"
 		 "LABEL"
 		 "STYLE"
@@ -109,6 +136,7 @@
 		 "DEFAULT_VALUE"
 		 "CONSTANT_UNIT"
 		 "DISPLAY_FORMAT"
+		 "EDIT_FORMAT"
 	;; Chart Attributes
 		 "MEMBERS"
 		 "WIDTH"
@@ -122,8 +150,59 @@
 		 "BLOCK"
 		 "OPERATION"
 		 "COLUMNBREAK"
-		 )
-	   (c-lang-const c-other-kwds)))
+		)
+	  )
+
+
+;;------------------------------------------------------------------------------
+;; Custom faces for HART specifics
+;;------------------------------------------------------------------------------
+
+;; Face for attributes
+(defface edd-attribute-face
+  '((t (:inherit font-lock-builtin-face :foreground "gold" )))
+  "Face for highlighting Attributes of edd elements.")
+
+;; Important to make the new face a  variable
+;; (http://emacs.stackexchange.com/questions/3584/how-do-i-specify-a-custom-face-with-font-lock-defaults)
+(defvar edd-attribute-face  'edd-attribute-face)
+
+
+;;(make-face 'edd-HART-specific-face)
+(defface edd-HART-specific-face
+  '((t (:inherit font-lock-constant-face :foreground "DeepSkyBlue" )))
+  "Face for highlighting 'HART Specific keywords'.")
+(defvar edd-HART-specific-face 'edd-HART-specific-face)
+
+
+
+;;------------------------------------------------------------------------------
+;; Bind keyword lists to font-lock faces
+;;------------------------------------------------------------------------------
+
+(font-lock-add-keywords
+ 'edd-mode
+ (list
+  ;; HART Keywords
+  (list (concat "\\<\\("
+  				(regexp-opt edd-HART-kwds t)
+  				"\\)\\>") 1 ''edd-HART-specific-face)
+  ;; Attributes
+  (list (concat "\\<\\("
+				(regexp-opt edd-attribute-kwds t)
+				"\\)\\>") 1 'edd-attribute-face)
+
+  ))
+
+
+(font-lock-add-keywords
+ 'edd-mode '(
+			 ("\\(Franz\\)" . 'font-lock-function-name-face)
+			 )
+ )
+
+
+;;------------------------------------------------------------------------------
 
 (defconst edd-font-lock-keywords-1 (c-lang-const c-matchers-1 edd)
   "Minimal highlighting for Edd mode.")
@@ -151,7 +230,8 @@
   ;; syntactic context, and which therefore should trigger
   ;; reindentation when they are completed.
   '(("else" "else" c-electric-continued-statement 0)
-    ("while" "while" c-electric-continued-statement 0)))
+	("ELSE" "ELSE" c-electric-continued-statement 0)
+   	("while" "while" c-electric-continued-statement 0)))
 
 (defvar edd-mode-map
   (let ((map (c-make-inherited-keymap)))
