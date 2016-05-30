@@ -34,46 +34,139 @@
 (eval-and-compile
   (c-add-language 'edd-mode 'c++-mode))
 
+;; EDD mandatory elements and default menus
+(setq edd-ident-kwds '("MANUFACTURER" "DEVICE_TYPE" "DEVICE_REVISION" "DD_REVISION"
+					   "diagnostic_root_menu" "process_variables_root_menu"
+					   "offline_root_menu" "device_root_menu"
+					   ))
+
+;; EDD communication functions
+(setq edd-comm-cmds
+	  '("abortTransferPort" "browseIdentity" "closeTransferPort"
+		"ext_send_command" "ext_send_command_trans" "fGetByte"
+		"get_more_status" "get_transfer_status" "openTransferPort"
+		"readItemFromDevice" "send" "send_command"
+		"send_command_trans" "send_trans" "writeItemToDevice"
+		"ReadCommand" "WriteCommand"
+		))
+
+;; EDD built-in functions
+(setq edd-built-in-functions
+	  '("ACKNOWLEDGE" "BUILD_MESSAGE" "DELAY" "LOG_MESSAGE"
+		"MenuDisplay" "PUT_MESSAGE" "SELECT_FROM_LIST"
+		"SELECT_FROM_MENU" "abort" "add_abort_method" "dictionary_string"
+		"discard_on_exit" "fgetval" "fsetval" "get_enum_string"
+		"get_rspcode_string" "get_status_code_string" "iassign"
+		"igetval" "isOffline" "isetval" "lassign"
+		"pop_abort_method" "process_abort" "push_abort_method"
+		"put_message" "remove_abort_method" "remove_all_abort_methods"
+		"save_values" "sgetval" "ssetval" "strcmp" "strlen" "strlwr"
+		"strmid" "strstr" "strtrim" "strupr"
+		"GET_LOCAL_VAR_VALUE" "GET_DEV_VAR_VALUE"
+		"get_local_var_value" "get_dev_var_value"
+		"get_dictionary_string"
+		;; list
+		"ListInsert" "ListDeleteElementAt"
+		))
+
+;; EDD Built-In response/return values
+(setq edd-built-in-response-codes
+	  '("BLTIN_SUCCESS"
+		"BLTIN_NO_MEMORY"
+		;; Built-in return codes
+		"BI_ABORT"	"BI_COMM_ERR" "BI_CONTINUE" "BI_ERROR"
+		"BI_NO_DEVICE" "BI_PORT_IN_USE" "BI_RETRY"
+		"BI_SUCCESS"
+		;; Edd errors
+		"DATA_ENTRY_ERROR" "DATA_ENTRY_WARNING"
+		"MISC_ERROR" "MISC_WARNING"
+		"MODE_ERROR" "PROCESS_ERROR"
+		"SUCCESS"
+		))
+
+;; Pre-defined attribute values
+(setq edd-attribute-value-kwds
+	  '(;; pre-defined classes (values for CLASS attribute)
+		"ALARM" "ANALOG_INPUT" "ANALOG_OUTPUT" "COMPUTATION"
+		"CONTAINED" "CORRECTION" "DEVICE" "DIAGNOSITC"
+		"DIGITAL_INPUT" "DIGITAL_OUTPUT" "DISCRETE_INPUT" "DISCRETE_OUTPUT"
+		"DYNAMIC" "FREQUENCY_INPUT" "FREQUENCY_OUTPUT"
+		"HART" "INPUT" "LOCAL" "LOCAL_DISPLAY" "OPERATE" "OPTIONAL"
+		"OUTPUT" "SERVICE" "TEMPORARY" "TUNE" "USER_INTERFACE"
+		"ANALOG_CHANNEL" "DISCRETE" "FREQUENCY" "MODE" "RANGE" "HIDDEN"
+		;; BIT_ENUMERATED classes
+		"ERROR" "IGNORE_IN_HOST" "INFO" "WARNING"
+		"DATA" "HARDWARE" "MISC" "PROCESS" "SOFTWARE"
+		"CORRECTABLE" "SELF_CORRECTING" "UNCORRECTABLE"
+		"DETAIL" "SUMMARY" "COMM_ERROR"
+		"MORE"
+		;; Output-Classes
+		"AUTO" "MANUAL" "GOOD" "BAD"
+		;; Style
+		"DIALOG" "WINDOW" "PAGE" "GROUP" "TABLE"
+		;; Formatting elements
+		"COLUMNBREAK" "ROWBREAK" "SEPARATOR"
+		;; Access values
+		"OFFLINE" "ONLINE"
+		;; size attributes values
+		"XX_SMALL" "X_SMALL" "SMALL" "MEDIUM" "LARGE" "X_LARGE" "XX_LARGE"
+		;; Grid orientation
+		"HORIZONTAL" "VERTICAL"
+		;; Chart Types
+		"GAUGE" "SCOPE" "STRIP" "SWEEP" "VERICAL_BAR" "HORIZONTAL_BAR"
+		;; Axis scaling
+		"LINEAR" "LOGARITHMIC"
+		;; Waveform types
+		"XT" "YT" "XY"
+		;; GUI Qualifiers
+		"NO_LABEL" "NO_UNIT" "READ_ONLY" "DISPLAY_VALUE"
+		))
+
+
+;; EDD defined types
 (c-lang-defconst c-primitive-type-kwds
-  edd (append '("FLOAT" 	"BOOL"
-				"INDEX"		"ARRAY_INDEX"
-				"ASCII" "BIT_ENUMERATED" "DATE" "INTEGER" "ENUMERATED" 
- 				"UNSIGNED_INTEGER")
+  edd (append '("ARRAY_INDEX" 	"ASCII" "BITSTRING" "BIT_ENUMERATED" "BOOL"
+				"DATE" "DATE_AND_TIME" "DD_STRING" "DOUBLE" "DURATION"
+				"ENUMERATED" "FLOAT"  "INTEGER" "OCTET"
+				"PACKED_ASCII" "PASSWORD" "TIME" "TIME_FORMAT"
+				"TIME_SCALE" "TIME_VALUE" "UNSIGNED_INTEGER")
 			  (c-lang-const c-primitive-type-kwds)))
 
-
+;; Constants are also used for defined attribute values
 (c-lang-defconst c-constant-kwds
   edd (append
-           '("READ" "WRITE" "TRUE" "FALSE"
-			 "DEVICE" "OFFLINE" "DYNAMIC" "LOCAL" "TABLE"
-			 "SCOPE" "LARGE" "ONLINE" "DIALOG" "PAGE"
-			  "VERTICAL" "USER_INTERFACE" "INPUT" "LOCK_UNLOCK"
+           '( "FALSE" "TRUE"
+			  "INPUT" "LOCK_UNLOCK"
+			  "READ"    "WRITE"
+			  "INLINE"
 			 )
            (c-lang-const c-constant-kwds)))
 
-
 (c-lang-defconst c-modifier-kwds
   edd (append
-	   '( "CONTAINED"
-		  "HANDLING"  "PRIVATE" )
-  (c-lang-const c-modifier-kwds)))
+	   '("IMPORT" "ADD"
+		 "DELETE" "REDEFINE")
+	   edd-ident-kwds
+	  (c-lang-const c-modifier-kwds)))
 
 ;; Statements followed directly by a block of code
+;; In EDD: attribute statements with braces
 (c-lang-defconst c-block-stmt-1-kwds
   edd (append
-	   '("ITEMS" "TYPE" "DEFINITION"
-		 "REQUEST"  "TRANSACTION" "REPLY"
-         "OPERATION" "RESPONSE_CODES" "VECTORS" "POST_EDIT_ACTIONS"
-		 "ELSE" )
+	   '("DEFINITION" "ELEMENTS" "ITEMS" "ITEMS"
+		 "KEY_POINTS" "MEMBERS" "OPERATION" "REDEFINITIONS"
+         "REPLY" "REQUEST" "RESPONSE_CODES" "TRANSACTION"
+		 "TYPE" "VECTORS"
+		 "ELSE"
+		 ;; Variable actions
+		 "POST_EDIT_ACTIONS" "PRE_EDIT_ACTIONS"
+		 "POST_READ_ACTIONS" "PRE_READ_ACTIONS"
+		 "POST_WRITE_ACTIONS" "PRE_WRITE_ACTIONS"
+		 ;; Chart / Waveform actions + brace attributes
+		 "INIT_ACTIONS"  "REFRESH_ACTIONS"
+		 "EXIT_ACTIONS" "X_VALUES" "Y_VALUES"
+		 )
 	(c-lang-const c-block-stmt-1-kwds)))
-
-;; Attributes with braces to open substatement blocks
-;; (c-lang-defconst c-other-block-decl-kwds
-;;   edd 
-;; 	   '("REPLY"
-;; 		 )
-;;   )
-
 
 ;; Statements followed directly by a Parentesis and block of code
 (c-lang-defconst c-block-stmt-2-kwds
@@ -90,16 +183,18 @@
 ;; Declaration of types c-class-decl-kwds or c-type-list-kwds
 (c-lang-defconst c-class-decl-kwds
   edd (append
-	   '("ARRAY" "INTERFACE" "COMMAND" "MENU" "METHOD"
-		 "GRID" "IMAGE" "TEMPLATE" "VARIABLE"
-		 "SOURCE" "AXIS" "WAVEFORM" "COLLECTION")
+	   '(
+		 "ARRAY" "AXIS" "BLOB" "CHART" "COLLECTION" "COMMAND" "ITEM_ARRAY"
+		 "EDIT_DISPLAY" "FILE" "GRAPH" "GRID" "IMAGE" "IMPORT" "LIST" "MENU"
+		 "METHOD" "PLUGIN" "REFRESH" "SOURCE" "TEMPLATE"
+		 "UNIT" "VARIABLE" "WAVEFORM" "WRITE_AS_ONE" "VARIABLE_LIST"
+	   )
 	   (c-lang-const  c-class-decl-kwds)))
 
 ;; Free standing statements (break, continue...)
 (c-lang-defconst c-simple-stmt-kwds
   edd (append
-	   '("random"
-		 )
+	   '("EVERYTHING")
 	   (c-lang-const c-simple-stmt-kwds)))
 
 ;; This allows the classes after the "LIKE" in the class declartion to be
@@ -107,49 +202,70 @@
 (c-lang-defconst c-typeless-decl-kwds
   edd '("LIKE" "OF"))
 
-;; We map all attribute keywords of EDDL to other-keywords
+;; EDDL other-keywords
 (c-lang-defconst c-other-kwds
   edd (append
-	   '("FOO")
+	   '("CHILD" "FIRST" "LAST" "NEXT" "NULL" "PARENT" "PREV" "SELF")
 	   (c-lang-const c-other-kwds)))
 
 ;;------------------------------------------------------------------------------
 ;; Field bus specifc keywords
 ;;------------------------------------------------------------------------------
 
-(setq edd-HART-kwds '("XMTR_IGNORE_ALL_DEVICE_STATUS"))
-
-(setq edd-property-kwds '("X_LARGE" "XX_LARGE"))
+(setq edd-HART-kwds
+	  '(
+		"ABORT_ON_ALL_COMM_STATUS" "ABORT_ON_ALL_DEVICE_STATUS" "ABORT_ON_ALL_RESPONSE_CODES"
+		"ABORT_ON_COMM_ERROR" "ABORT_ON_COMM_STATUS" "ABORT_ON_DEVICE_STATUS" "ABORT_ON_NO_DEVICE"
+		"ABORT_ON_RESPONSE_CODE"
+		"IGNORE_ALL_COMM_STATUS" "IGNORE_ALL_DEVICE_STATUS" "IGNORE_ALL_RESPONSE_CODES"
+		"IGNORE_COMM_ERROR" "IGNORE_COMM_STATUS" "IGNORE_DEVICE_STATUS" "IGNORE_NO_DEVICE"
+		"IGNORE_RESPONSE_CODE"
+		"RETRY_ON_ALL_COMM_STATUS" "RETRY_ON_ALL_DEVICE_STATUS" "RETRY_ON_ALL_RESPONSE_CODES"
+		"RETRY_ON_COMM_ERROR" "RETRY_ON_COMM_STATUS" "RETRY_ON_DEVICE_STATUS"
+		"RETRY_ON_NO_DEVICERETRY_ON_RESPONSE_CODE"
+		"XMTR_ABORT_ON_ALL_COMM_STATUS" "XMTR_ABORT_ON_ALL_DATA" "XMTR_ABORT_ON_ALL_DEVICE_STATUS"
+		"XMTR_ABORT_ON_ALL_RESPONSE_CODES" "XMTR_ABORT_ON_COMM_ERROR" "XMTR_ABORT_ON_COMM_STATUS"
+		"XMTR_ABORT_ON_DATA" "XMTR_ABORT_ON_DEVICE_STATUS" "XMTR_ABORT_ON_NO_DEVICE"
+		"XMTR_ABORT_ON_RESPONSE_CODE" "XMTR_IGNORE_ALL_COMM_STATUS" "XMTR_IGNORE_ALL_DATA"
+		"XMTR_IGNORE_ALL_DEVICE_STATUS" "XMTR_IGNORE_ALL_RESPONSE_CODES" "XMTR_IGNORE_COMM_ERROR"
+		"XMTR_IGNORE_COMM_STATUS" "XMTR_IGNORE_DATA" "XMTR_IGNORE_DEVICE_STATUS" "XMTR_IGNORE_NO_DEVICE"
+		"XMTR_IGNORE_RESPONSE_CODE" "XMTR_RETRY_ON_ALL_COMM_STATUS" "XMTR_RETRY_ON_ALL_DATA"
+		"XMTR_RETRY_ON_ALL_DEVICE_STATUS" "XMTR_RETRY_ON_ALL_RESPONSE_CODES" "XMTR_RETRY_ON_COMM_ERROR"
+		"XMTR_RETRY_ON_COMM_STATUS" "XMTR_RETRY_ON_DATA" "XMTR_RETRY_ON_DEVICE_STATUS"
+		"XMTR_RETRY_ON_NO_DEVICE" "XMTR_RETRY_ON_RESPONSE_CODE"
+		"display_response_status" "display_xmtr_status"
+		"ext_send_command" "ext_send_command_trans"
+		))
 
 ;; Attributes in Blocks (VARIABLE, Axis...)
 (setq edd-attribute-kwds
 	  '(
-		 "ACCESS"
-		 "CLASS"
-		 "HANDLING"
-		 "PATH"
-		 "LABEL"
-		 "STYLE"
-		 "HELP"
-		 "MIN_VALUE"
-		 "MAX_VALUE"
-		 "DEFAULT_VALUE"
-		 "CONSTANT_UNIT"
-		 "DISPLAY_FORMAT"
-		 "EDIT_FORMAT"
-	;; Chart Attributes
-		 "MEMBERS"
-		 "WIDTH"
-		 "HEIGHT"
-	;; Source Attributes
-		 "LINE_COLOR"
-		 "X_AXIS"
-		 "Y_AXIS"
-	;; Attributes for COMMANDS
-		 "NUMBER"
-		 "BLOCK"
-		 "OPERATION"
-		 "COLUMNBREAK"
+		;; Variable / Common
+		"LABEL" "HELP"	"CLASS" "HANDLING"
+		"STYLE"	"CONSTANT_UNIT" "ACCESS"  "PURPOSE"
+		"READ_TIMEOUT"	 "WRITE_TIMEOUT" ;; "TYPE" is a block-statement
+		;; Image
+		"PATH" 	"LINK"
+		;; Array
+		"NUMBER_OF_ELEMENTS"
+		;; LIST
+		"COUNT"	"CAPACITY"
+		;; Type Subattributes
+		"DISPLAY_FORMAT" "EDIT_FORMAT"	"DEFAULT_VALUE"	"INITIAL_VALUE"
+		"MIN_VALUE"	"MAX_VALUE"	"SCALING_FACTOR"
+		;; style / formating elements
+		"ORIENTATION"
+		;; Chart Attributes
+		"HEIGHT" "HIGH_HIGH_LIMIT" "HIGH_LIMIT" "LOW_LIMIT"
+		"LOW_LOW_LIMIT"	"WIDTH"	"LENGTH" "CYCLE_TIME"
+		;; Source Attributes
+		"LINE_COLOR" "LINE_TYPE" "EMPHASIS"	"X_AXIS" "Y_AXIS"
+		;; AXIS / Waveform
+		"SCALING" "X_INITIAL" "Y_INITIAL"
+		"X_INCREMENT" "NUMBER_OF_POINTS"
+		;; Attributes for COMMANDS
+		"NUMBER" "BLOCK" "OPERATION" "SLOT"
+		"SUBSLOT" "INDEX"
 		)
 	  )
 
@@ -160,20 +276,27 @@
 
 ;; Face for attributes
 (defface edd-attribute-face
-  '((t (:inherit font-lock-builtin-face :foreground "gold" )))
+  '((t (:inherit font-lock-builtin-face :foreground "gold"  :weight bold )))
   "Face for highlighting Attributes of edd elements.")
 
-;; Important to make the new face a  variable
-;; (http://emacs.stackexchange.com/questions/3584/how-do-i-specify-a-custom-face-with-font-lock-defaults)
-(defvar edd-attribute-face  'edd-attribute-face)
+(defface edd-attribute-value-face
+  '((t (:inherit font-lock-builtin-face :foreground "LimeGreen" :weight semi-bold )))
+  "Face for highlighting attribute value keywords")
 
+(defface edd-special-face
+  '((t (:inherit font-lock-builtin-face :foreground "IndianRed" :weight bold )))
+  "Face for highlighting mandatory info, return codes, and pre-defined menus.")
 
-;;(make-face 'edd-HART-specific-face)
 (defface edd-HART-specific-face
   '((t (:inherit font-lock-constant-face :foreground "DeepSkyBlue" )))
   "Face for highlighting 'HART Specific keywords'.")
-(defvar edd-HART-specific-face 'edd-HART-specific-face)
 
+;; Important to make the new face a  variable
+;; (http://emacs.stackexchange.com/questions/3584/how-do-i-specify-a-custom-face-with-font-lock-defaults)
+(defvar edd-special-face  'edd-special-face)
+(defvar edd-attribute-face  'edd-attribute-face)
+(defvar edd-attribute-value-face  'edd-attribute-value-face)
+(defvar edd-HART-specific-face 'edd-HART-specific-face)
 
 
 ;;------------------------------------------------------------------------------
@@ -186,12 +309,28 @@
   ;; HART Keywords
   (list (concat "\\<\\("
   				(regexp-opt edd-HART-kwds t)
-  				"\\)\\>") 1 ''edd-HART-specific-face)
+  				"\\)\\>")
+		1 'edd-HART-specific-face)
   ;; Attributes
   (list (concat "\\<\\("
 				(regexp-opt edd-attribute-kwds t)
-				"\\)\\>") 1 'edd-attribute-face)
-
+				"\\)\\>")
+		1 'edd-attribute-face)
+  ;; Attribute values
+  (list (concat "\\<\\("
+				(regexp-opt edd-attribute-value-kwds t)
+				"\\)\\>")
+		1 'edd-attribute-value-face)
+  ;; Special elements
+  (list (concat "\\<\\("
+				(regexp-opt edd-ident-kwds t)
+				"\\)\\>")
+		1 'edd-special-face)
+  ;; Built-in functions
+   (list (concat "\\<\\("
+				(regexp-opt (append edd-built-in-functions edd-comm-cmds) t)
+				"\\)\\>")
+		1 'font-lock-function-name-face)
   ))
 
 
