@@ -35,10 +35,15 @@
   (c-add-language 'edd-mode 'c++-mode))
 
 ;; EDD mandatory elements and default menus
-(setq edd-ident-kwds '("MANUFACTURER" "DEVICE_TYPE" "DEVICE_REVISION" "DD_REVISION"
-					   "diagnostic_root_menu" "process_variables_root_menu"
-					   "offline_root_menu" "device_root_menu"
-					   ))
+(setq edd-ident-kwds
+	  '(
+		"MANUFACTURER" "DEVICE_TYPE" "DEVICE_REVISION" "DD_REVISION"
+		"device_root_menu" "diagnostic_root_menu"
+		"download_to_device_root_menu"
+		"mantenance_root_menu" "offline_root_menu" "process_variables_root_menu"
+		"root_menu" "upload_from_device_root_menu"
+		"view_menu"
+		))
 
 ;; EDD communication functions
 (setq edd-comm-cmds
@@ -56,7 +61,7 @@
 		"MenuDisplay" "PUT_MESSAGE" "SELECT_FROM_LIST"
 		"SELECT_FROM_MENU" "abort" "add_abort_method" "dictionary_string"
 		"discard_on_exit" "fgetval" "fsetval" "get_enum_string"
-		"get_rspcode_string" "get_status_code_string" "iassign"
+		"get_rspcode_string" "get_status_code_string"
 		"igetval" "isOffline" "isetval" "lassign"
 		"pop_abort_method" "process_abort" "push_abort_method"
 		"put_message" "remove_abort_method" "remove_all_abort_methods"
@@ -65,9 +70,25 @@
 		"GET_LOCAL_VAR_VALUE" "GET_DEV_VAR_VALUE"
 		"get_local_var_value" "get_dev_var_value"
 		"get_dictionary_string"
+	    ;; method related
+		"DD_ITEM" "DD_STRING" "DICT_ID" "DICTSTRID"
+		"ITEM_ID" "MEMBER_ID" "METHOD_ID" "METHODID"
+		"VARID"
 		;; list
 		"ListInsert" "ListDeleteElementAt"
 		))
+
+;; EDD Deprecated built-ins
+;; See SPEC500 Annex A "Archaic Builtins"
+(setq edd-deprecated-keywds
+	  '("dassign"  "assign_double"
+		"fassign" "assign_float"
+		"iassign" "assign_int"
+		"vassign" "assign_var"
+		"float_value" "fvar_value"
+		"int_value" "ivar_value"
+		)
+	  )
 
 ;; EDD Built-In response/return values
 (setq edd-built-in-response-codes
@@ -144,7 +165,7 @@
 
 (c-lang-defconst c-modifier-kwds
   edd (append
-	   '("IMPORT" "ADD"
+	   '("ADD"
 		 "DELETE" "REDEFINE")
 	   edd-ident-kwds
 	  (c-lang-const c-modifier-kwds)))
@@ -185,7 +206,7 @@
   edd (append
 	   '(
 		 "ARRAY" "AXIS" "BLOB" "CHART" "COLLECTION" "COMMAND" "ITEM_ARRAY"
-		 "EDIT_DISPLAY" "FILE" "GRAPH" "GRID" "IMAGE" "IMPORT" "LIST" "MENU"
+		 "EDIT_DISPLAY" "FILE" "GRAPH" "GRID" "IMAGE" "LIST" "MENU"
 		 "METHOD" "PLUGIN" "REFRESH" "SOURCE" "TEMPLATE"
 		 "UNIT" "VARIABLE" "WAVEFORM" "WRITE_AS_ONE" "VARIABLE_LIST"
 	   )
@@ -194,7 +215,7 @@
 ;; Free standing statements (break, continue...)
 (c-lang-defconst c-simple-stmt-kwds
   edd (append
-	   '("EVERYTHING")
+	   '("IMPORT" "EVERYTHING")
 	   (c-lang-const c-simple-stmt-kwds)))
 
 ;; This allows the classes after the "LIKE" in the class declartion to be
@@ -214,6 +235,7 @@
 
 (setq edd-HART-kwds
 	  '(
+		"STANDARD" "_STATUS" "_TABLES" "_UNIVERSAL" "_COMMON_PRACTICE"
 		"ABORT_ON_ALL_COMM_STATUS" "ABORT_ON_ALL_DEVICE_STATUS" "ABORT_ON_ALL_RESPONSE_CODES"
 		"ABORT_ON_COMM_ERROR" "ABORT_ON_COMM_STATUS" "ABORT_ON_DEVICE_STATUS" "ABORT_ON_NO_DEVICE"
 		"ABORT_ON_RESPONSE_CODE"
@@ -235,7 +257,54 @@
 		"XMTR_RETRY_ON_NO_DEVICE" "XMTR_RETRY_ON_RESPONSE_CODE"
 		"display_response_status" "display_xmtr_status"
 		"ext_send_command" "ext_send_command_trans"
-		))
+		;; COLORS from macros.ddl
+		"BLACK" "SILVER" "GRAY" "WHITE" "MAROON"
+		"RED" "ORANGE" "PURPLE" "FUCHSIA" "GREEN" "LIME"
+		"OLIVE" "YELLOW" "NAVY" "BLUE" "TEAL" "AQUA"
+		;; Universal Variables & Commands - would be cool if we had a parser
+		;; The following variables will be added as regexp later
+		;;device_variable_code_[1-4]
+		;;device_specific_status_[1-24]
+		"comm_status" "config_change_counter" "date" "descriptor" "device_id"
+		"final_assembly_number" "hardware_revision" "longTag"
+		"max_num_device_variables" "message" "polling_address"
+		"read_additional_device_status"	"read_device_variables_and_status"
+		"read_dynamic_variable_classification" "read_dynamic_variables_and_pv_current"
+		"read_final_assembly_number"
+		"read_long_tag" "read_loop_configuration" "read_message"
+		"read_pv" "read_pv_current_and_percent_range" "read_pv_output_info"
+		"read_pv_sensor_info" "read_tag_descriptor_date" "read_unique_identifier"
+		"read_unique_identifier_with_long_tag" "read_unique_identifier_with_tag"
+		"request_preambles"
+		"reset_configuration_change_flag" "response_code" "response_preambles"
+		"software_revision" "tag" "time_stamp" "transmitter_revision"
+		"universal_revision" "write_final_assembly_number" "write_long_tag"
+		"write_message" "write_polling_address"
+		"write_tag_descriptor_date"
+		;;
+		"background_period"  "device_status"
+		"comm_status"  "device_icon"  "response_code"
+		"loop_warning_variables" "upload_variables" "extended_device_status"
+		"manufacturer_id" "private_label_distributo" "device_type"
+		"write_protect" "physical_signaling_code" "loop_current_mode" "device_flags"
+		"extended_fld_device_status"  "device_profile"
+		"standardized_status_0" "standardized_status_1" "standardized_status_2" "standardized_status_3"
+		"analog_channel_saturated1" "analog_channel_fixed1"
+		;; From menu.ddl
+		"root_menu" "device_setup" "process_variables"  "diag_service"
+		"test_device" "calibration" "status_display" "basic_setup"
+		"detailed_setup" "device_info" "construction_materials"
+		"device_revisions" "measuring_elements" "menu_pres_sensor"
+		"menu_sensor_info" "signal_conditioning" "output_conditioning"
+		"analog_output" "hart_output" "frequency_output" "discrete_output"
+		"review" "hot_key"
+		;; PV1.ddl
+		"loopCurrent" "loop_alarm_code" "loop_flags" "analog_io" "percentRange"
+		"transfer_function" "upperRange_value" "lowerRange_value" "scaling"
+		"primary_variable" "secondary_variable" "tertiary_variable"
+		"quaternary_variable" "dynamic_variables" "scaling_units_relation"
+		"scaling_wao"
+		 ))
 
 ;; Attributes in Blocks (VARIABLE, Axis...)
 (setq edd-attribute-kwds
@@ -271,13 +340,21 @@
 
 
 ;;------------------------------------------------------------------------------
-;; Custom faces for HART specifics
+;; Menu entries & Commands
+;;------------------------------------------------------------------------------
+(defgroup EDD nil "EDD mode customizations"
+  :group 'languages)
+
+
+;;------------------------------------------------------------------------------
+;; Custom faces for EDD Specifics
 ;;------------------------------------------------------------------------------
 
 ;; Face for attributes
 (defface edd-attribute-face
   '((t (:inherit font-lock-builtin-face :foreground "gold"  :weight bold )))
-  "Face for highlighting Attributes of edd elements.")
+  "Face for highlighting Attributes of edd elements."
+  :group 'EDD)
 
 (defface edd-attribute-value-face
   '((t (:inherit font-lock-builtin-face :foreground "LimeGreen" :weight semi-bold )))
@@ -291,15 +368,22 @@
   '((t (:inherit font-lock-constant-face :foreground "DeepSkyBlue" )))
   "Face for highlighting 'HART Specific keywords'.")
 
+
+(defface edd-deprecated-face
+  '((t (:inherit font-lock-function-name-face :underline (:color "yellow" :style wave) )))
+  "Face for highlighting deprecated symbols and functions")
+
+
 ;; Important to make the new face a  variable
 ;; (http://emacs.stackexchange.com/questions/3584/how-do-i-specify-a-custom-face-with-font-lock-defaults)
 (defvar edd-special-face  'edd-special-face)
 (defvar edd-attribute-face  'edd-attribute-face)
 (defvar edd-attribute-value-face  'edd-attribute-value-face)
 (defvar edd-HART-specific-face 'edd-HART-specific-face)
+(defvar edd-deprecated-face  'edd-deprecated-face)
 
 
-;;------------------------------------------------------------------------------
+;------------------------------------------------------------------------------
 ;; Bind keyword lists to font-lock faces
 ;;------------------------------------------------------------------------------
 
@@ -308,9 +392,15 @@
  (list
   ;; HART Keywords
   (list (concat "\\<\\("
-  				(regexp-opt edd-HART-kwds t)
+  				(regexp-opt (append edd-HART-kwds edd-built-in-response-codes) t)
   				"\\)\\>")
 		1 'edd-HART-specific-face)
+  ;; manual regexp for device_specific_status
+  (list (concat "\\<\\("
+  				"device_\\(specific_status\\|variable_code\\)_[0-9]+"
+  				"\\)\\>")
+  		1 'edd-HART-specific-face)
+
   ;; Attributes
   (list (concat "\\<\\("
 				(regexp-opt edd-attribute-kwds t)
@@ -327,12 +417,16 @@
 				"\\)\\>")
 		1 'edd-special-face)
   ;; Built-in functions
-   (list (concat "\\<\\("
+  (list (concat "\\<\\("
 				(regexp-opt (append edd-built-in-functions edd-comm-cmds) t)
 				"\\)\\>")
 		1 'font-lock-function-name-face)
+  ;; Deprecated functions in warning face
+  (list (concat "\\<\\("
+				(regexp-opt edd-deprecated-keywds t)
+				"\\)\\>")
+		1 'edd-deprecated-face)
   ))
-
 
 (font-lock-add-keywords
  'edd-mode '(
