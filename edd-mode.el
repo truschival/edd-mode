@@ -475,6 +475,25 @@
 (easy-menu-define edd-menu edd-mode-map "Edd Mode Commands"
   (cons "Edd" (c-lang-const c-mode-menu edd)))
 
+;; Initialize Snippets
+(defun init-edd-snippets ()
+  ;; only provide snippets if yasnippet is installed
+  (when (require 'yasnippet nil :noerror)
+	;; Enter Yas
+	(yas-minor-mode t)
+	;; Where edd-mode.el is found (or if the buffer is evaluated)
+	(defvar edd-mode-root
+	  (file-name-directory (or load-file-name (buffer-file-name))))
+
+	(let ((snip-dir (expand-file-name "snippets" edd-mode-root)))
+	  (when (boundp 'yas-snippet-dirs)
+		(add-to-list 'yas-snippet-dirs snip-dir t)
+		(message snip-dir)
+	  (yas-load-directory snip-dir)))
+	)
+  )
+
+
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.edd\\'" . edd-mode))
 ;;;###autoload
@@ -512,13 +531,12 @@ Key bindings:
   (easy-menu-add edd-menu)
   (run-hooks 'c-mode-common-hook)
   (run-hooks 'edd-mode-hook)
+  (init-edd-snippets)
   (c-update-modeline)
   ;;(add-custom-keyw)
  )
 
-(defun edd-run-edd ()
-  (interactive)
-  (start-file-process "edd" () edd-executable (buffer-file-name)))
+
 
 (provide 'edd-mode)
 ;;; edd-mode.el ends here

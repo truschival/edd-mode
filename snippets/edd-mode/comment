@@ -1,0 +1,16 @@
+# contributor: Thomas Ruschival <thomas@ruschival.de>
+# name: Standard File Comment
+# key: /***
+# binding: C-c C-c C-c
+# --
+
+/*******************************************************************************
+ * \filename
+ * \brief       ${1:brief description}
+ *
+ * \details     $1
+ *
+ * \author      `user-full-name` <`user-mail-address`>
+ * \since       `(format-time-string "%Y-%m-%d")`
+ *
+ *******************************************************************************/

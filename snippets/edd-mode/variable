@@ -1,0 +1,15 @@
+# contributor: Thomas Ruschival <thomas@ruschival.de>
+# name: create variable
+# key: var
+# binding: C-c C-c C-v
+# --
+/**
+ *
+ */
+VARIABLE $1 {
+		 LABEL	"$2";
+		 HELP	${3:[blank]};
+		 CLASS	${4:DYNAMIC};
+
+		 TYPE	${5:UNSIGNED_INTEGER(2)};
+}

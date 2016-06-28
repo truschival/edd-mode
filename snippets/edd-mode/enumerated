@@ -1,0 +1,7 @@
+# contributor: Thomas Ruschival <thomas@ruschival.de>
+# name: enumerated type
+# key: ENUM
+# --
+ENUMERATED {
+		{${1:value},${2:"description"},${3:"help (optional)"}}
+}

@@ -1,0 +1,7 @@
+# contributor: Thomas Ruschival <thomas@ruschival.de>
+# name: bit enumerated type
+# key: BIT
+# --
+BIT_ENUMERATED (${1:2}) {
+		{${2:0x01},${3:"description"} ${4:,"help (optional)"}}
+}

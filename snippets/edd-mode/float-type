@@ -1,0 +1,9 @@
+# contributor: Thomas Ruschival <thomas@ruschival.de>
+# name: float type
+# key: FLOAT
+# --
+FLOAT {
+	DISPLAY_FORMAT ${1:".2f"};
+	EDIT_FORMAT ${2:".2f"};
+	DEFAULT_VALUE ${3:1.0};
+}
